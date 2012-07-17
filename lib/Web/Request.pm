@@ -1,6 +1,7 @@
 package Web::Request;
 use Moose;
 
+use Encode ();
 use HTTP::Headers;
 use URI;
 
@@ -73,7 +74,14 @@ has query_parameters => (
     is      => 'ro',
     isa     => 'HashRef[Str]',
     lazy    => 1,
-    default => sub { +{ shift->uri->query_form } },
+    default => sub {
+        my $self = shift;
+
+        my %params = $self->uri->query_form;
+        return {
+            map { $_ => $self->decode($params{$_}) } keys %params
+        };
+    },
 );
 
 has all_query_parameters => (
@@ -88,7 +96,7 @@ has all_query_parameters => (
         my $ret = {};
 
         while (my ($k, $v) = $it->()) {
-            push @{ $ret->{$k} ||= [] }, $v;
+            push @{ $ret->{$k} ||= [] }, $self->decode($v);
         }
 
         return $ret;
@@ -120,6 +128,20 @@ has uploads => (
     default => sub {
         ...
     },
+);
+
+has encoding => (
+    is      => 'ro',
+    isa     => 'Str',
+    default => 'iso-8859-1',
+);
+
+has _encoding_obj => (
+    is      => 'ro',
+    isa     => 'Encode::Encoding',
+    lazy    => 1,
+    default => sub { Encode::find_encoding(shift->encoding) },
+    handles => ['decode', 'encode'],
 );
 
 sub new_from_env {
