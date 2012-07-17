@@ -159,6 +159,7 @@ sub new_from_request {
 }
 
 sub response_class { 'Web::Response' }
+sub upload_class   { 'Web::Request::Upload' }
 
 sub path {
     my $self = shift;
