@@ -210,7 +210,7 @@ has content => (
 
         # XXX get Plack::TempBuffer onto CPAN separately, so that this doesn't
         # always have to be sitting in memory
-        return $self->_parsed_body->{content};
+        return $self->decode($self->_parsed_body->{content});
     },
 );
 
@@ -258,7 +258,7 @@ has body_parameters => (
         my $ret = {};
         for my $key (keys %$body) {
             my $val = $body->{$key};
-            $ret->{$key} = ref($val) ? $val->[-1] : $val;
+            $ret->{$key} = $self->decode(ref($val) ? $val->[-1] : $val);
         }
 
         return $ret;
@@ -277,7 +277,9 @@ has all_body_parameters => (
         my $ret = {};
         for my $key (keys %$body) {
             my $val = $body->{$key};
-            $ret->{$key} = ref($val) ? $val : [ $val ];
+            $ret->{$key} = ref($val)
+                ? [ map { $self->decode($_) } @$val ]
+                : [ $self->decode($val) ];
         }
 
         return $ret;
