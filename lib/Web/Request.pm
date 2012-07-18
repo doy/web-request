@@ -3,6 +3,7 @@ use Moose;
 
 use Encode ();
 use List::MoreUtils ();
+use HTTP::Body ();
 use HTTP::Headers ();
 use HTTP::Message::PSGI ();
 use URI ();
@@ -138,12 +139,75 @@ has cookies => (
     },
 );
 
+has _parsed_body => (
+    traits  => ['Hash'],
+    is      => 'ro',
+    isa     => 'HashRef',
+    lazy    => 1,
+    default => sub {
+        my $self = shift;
+
+        my $ct = $self->content_type;
+        my $cl = $self->content_length;
+        if (!$ct && !$cl) {
+            return {
+                _content => '',
+                _body    => {},
+                _uploads => {},
+            };
+        }
+
+        my $body = HTTP::Body->new($ct, $cl);
+        $body->cleanup(1);
+
+        my $fh = $self->input;
+
+        if ($self->env->{'psgix.input.buffered'}) {
+            $input->seek(0, 0);
+        }
+
+        my $content = '';
+        my $spin = 0;
+        while ($cl) {
+            $input->read(my $chunk, $cl < 8192 ? $cl : 8192);
+            my $read = length($chunk);
+            $cl -= $read;
+            $body->add($chunk);
+            $content .= $chunk;
+
+            if ($read == 0 && $spin++ > 2000) {
+                confess "Bad Content-Length ($cl bytes remaining)";
+            }
+        }
+
+        if ($self->env->{'psgix.input.buffered'}) {
+            $input->seek(0, 0);
+        }
+        else {
+            open my $fh, '<', \$content;
+            $self->env->{'psgix.input'} = $fh;
+            $self->env->{'psgix.input.buffered'} = 1;
+        }
+
+        return {
+            _content => $content,
+            _body    => $body->param,
+            _uploads => $body->upload,
+        }
+    },
+    handles => ['_content', '_body', '_uploads'],
+);
+
 has content => (
     is      => 'ro',
     isa     => 'Str',
     lazy    => 1,
     default => sub {
-        ...
+        my $self = shift;
+
+        # XXX get Plack::TempBuffer onto CPAN separately, so that this doesn't
+        # always have to be sitting in memory
+        return $self->_parsed_body->{content};
     },
 );
 
@@ -185,7 +249,17 @@ has body_parameters => (
     isa     => 'HashRef[Str]',
     lazy    => 1,
     default => sub {
-        ...
+        my $self = shift;
+
+        my $body = $self->_body;
+
+        my $ret = {};
+        for my $key (keys %$body) {
+            my $val = $body->{$key};
+            $ret->{$key} = ref($val) ? $val->[-1] : $val;
+        }
+
+        return $ret;
     },
 );
 
@@ -194,16 +268,59 @@ has all_body_parameters => (
     isa     => 'HashRef[ArrayRef[Str]]',
     lazy    => 1,
     default => sub {
-        ...
+        my $self = shift;
+
+        my $body = $self->_body;
+
+        my $ret = {};
+        for my $key (keys %$body) {
+            my $val = $body->{$key};
+            $ret->{$key} = ref($val) ? $val : [ $val ];
+        }
+
+        return $ret;
     },
 );
 
 has uploads => (
     is      => 'ro',
-    isa     => 'ArrayRef[Web::Request::Upload]',
+    isa     => 'HashRef[Web::Request::Upload]',
     lazy    => 1,
     default => sub {
-        ...
+        my $self = shift;
+
+        my $uploads = $self->_uploads;
+
+        my $ret = {};
+        for my $key (keys %$uploads) {
+            my $val = $uploads->{$key};
+            $ret->{$key} = ref($val)
+                ? $self->new_upload($val->[-1])
+                : $self->new_upload($val);
+        }
+
+        return $ret;
+    },
+);
+
+has all_uploads => (
+    is      => 'ro',
+    isa     => 'HashRef[ArrayRef[Web::Request::Upload]]',
+    lazy    => 1,
+    default => sub {
+        my $self = shift;
+
+        my $uploads = $self->_uploads;
+
+        my $ret = {};
+        for my $key (keys %$uploads) {
+            my $val = $uploads->{$key};
+            $ret->{$key} = ref($val)
+                ? [ map { $self->new_upload($_) } @$val ]
+                : [ $self->new_upload($val) ];
+        }
+
+        return $ret;
     },
 );
 
@@ -238,18 +355,24 @@ sub new_from_request {
 sub response_class { 'Web::Response' }
 sub upload_class   { 'Web::Request::Upload' }
 
+sub new_response {
+    my $self = shift;
+
+    $self->response_class->new(@_);
+}
+
+sub new_upload {
+    my $self = shift;
+
+    $self->upload_class->new(@_);
+}
+
 sub path {
     my $self = shift;
 
     my $path = $self->path_info;
     return $path if length($path);
     return '/';
-}
-
-sub new_response {
-    my $self = shift;
-
-    $self->response_class->new(@_);
 }
 
 sub parameters {
