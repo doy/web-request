@@ -36,7 +36,7 @@ has env => (
     },
 );
 
-has _uri_base => (
+has _base_uri => (
     is      => 'ro',
     isa     => 'Str',
     lazy    => 1,
@@ -56,11 +56,11 @@ has _uri_base => (
     },
 );
 
-has uri_base => (
+has base_uri => (
     is      => 'ro',
     isa     => 'URI',
     lazy    => 1,
-    default => sub { URI->new(shift->_uri_base)->canonical },
+    default => sub { URI->new(shift->_base_uri)->canonical },
 );
 
 has uri => (
@@ -70,7 +70,7 @@ has uri => (
     default => sub {
         my $self = shift;
 
-        my $base = $self->_uri_base;
+        my $base = $self->_base_uri;
 
         # We have to escape back PATH_INFO in case they include stuff
         # like ? or # so that the URI parser won't be tricked. However
@@ -245,8 +245,6 @@ sub path {
     return $path if length($path);
     return '/';
 }
-
-sub uri_base { URI->new(shift->_uri_base)->canonical; }
 
 sub new_response {
     my $self = shift;
