@@ -3,17 +3,20 @@ use Moose;
 
 use HTTP::Headers;
 
+use Web::Response::Types ();
+
 has status => (
     is      => 'rw',
-    isa     => 'Int', # XXX restrict to /^[1-5][0-9][0-9]$/
+    isa     => 'Web::Response::Types::HTTPStatus',
     lazy    => 1,
     default => sub { confess "Status was not supplied" },
 );
 
 has headers => (
     is      => 'rw',
-    isa     => 'HTTP::Headers', # XXX coerce from array/hashref
+    isa     => 'Web::Response::Types::HTTP::Headers',
     lazy    => 1,
+    coerce  => 1,
     default => sub { HTTP::Headers->new },
     handles => {
         header           => 'header',
@@ -26,7 +29,9 @@ has headers => (
 
 has body => (
     is      => 'rw',
+    isa     => 'Web::Response::Types::PSGIBody',
     lazy    => 1,
+    coerce  => 1,
     default => sub { [] },
 );
 
