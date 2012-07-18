@@ -2,7 +2,6 @@ package Web::Request;
 use Moose;
 
 use Encode ();
-use List::MoreUtils ();
 use HTTP::Body ();
 use HTTP::Headers ();
 use HTTP::Message::PSGI ();
@@ -233,10 +232,9 @@ has all_query_parameters => (
         my $self = shift;
 
         my @params = $self->uri->query_form;
-        my $it = List::MoreUtils::natatime 2, @params;
         my $ret = {};
 
-        while (my ($k, $v) = $it->()) {
+        while (my ($k, $v) = splice @params, 0, 2) {
             push @{ $ret->{$k} ||= [] }, $self->decode($v);
         }
 
