@@ -1,6 +1,7 @@
 package Web::Request;
 use Moose;
 
+use Class::Load ();
 use Encode ();
 use HTTP::Body ();
 use HTTP::Headers ();
@@ -138,6 +139,11 @@ has cookies => (
     },
 );
 
+has _http_body => (
+    is  => 'rw',
+    isa => 'HTTP::Body',
+);
+
 has _parsed_body => (
     traits  => ['Hash'],
     is      => 'ro',
@@ -157,7 +163,9 @@ has _parsed_body => (
         }
 
         my $body = HTTP::Body->new($ct, $cl);
+        # automatically clean up, but wait until the request object is gone
         $body->cleanup(1);
+        $self->_http_body($body);
 
         my $input = $self->_input;
 
@@ -221,7 +229,10 @@ has query_parameters => (
     default => sub {
         my $self = shift;
 
-        my %params = $self->uri->query_form;
+        my %params = (
+            $self->uri->query_form,
+            (map { $_ => '' } $self->uri->query_keywords),
+        );
         return {
             map { $_ => $self->decode($params{$_}) } keys %params
         };
@@ -298,7 +309,7 @@ has uploads => (
         my $ret = {};
         for my $key (keys %$uploads) {
             my $val = $uploads->{$key};
-            $ret->{$key} = ref($val)
+            $ret->{$key} = ref($val) eq 'ARRAY'
                 ? $self->new_upload($val->[-1])
                 : $self->new_upload($val);
         }
@@ -319,7 +330,7 @@ has all_uploads => (
         my $ret = {};
         for my $key (keys %$uploads) {
             my $val = $uploads->{$key};
-            $ret->{$key} = ref($val)
+            $ret->{$key} = ref($val) eq 'ARRAY'
                 ? [ map { $self->new_upload($_) } @$val ]
                 : [ $self->new_upload($val) ];
         }
@@ -336,7 +347,7 @@ has encoding => (
 
 has _encoding_obj => (
     is      => 'ro',
-    isa     => 'Encode::Encoding',
+    isa     => 'Object', # no idea what this should be
     lazy    => 1,
     default => sub { Encode::find_encoding(shift->encoding) },
     handles => ['decode', 'encode'],
@@ -362,12 +373,14 @@ sub upload_class   { 'Web::Request::Upload' }
 sub new_response {
     my $self = shift;
 
+    Class::Load::load_class($self->response_class);
     $self->response_class->new(@_);
 }
 
 sub new_upload {
     my $self = shift;
 
+    Class::Load::load_class($self->upload_class);
     $self->upload_class->new(@_);
 }
 

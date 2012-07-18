@@ -108,6 +108,8 @@ sub _bake_cookie {
         if defined($val->{path});
     push @cookie, 'expires=' . $self->_date($val->{expires})
         if defined($val->{expires});
+    push @cookie, 'max-age=' . $val->{'max-age'}
+        if defined($val->{'max-age'});
     push @cookie, 'secure'
         if $val->{secure};
     push @cookie, 'HttpOnly'

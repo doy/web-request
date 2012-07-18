@@ -3,9 +3,12 @@ use Moose;
 
 use HTTP::Headers;
 
+use Web::Response::Types;
+
 has headers => (
     is      => 'ro',
-    isa     => 'HTTP::Headers',
+    isa     => 'Web::Response::Types::HTTP::Headers',
+    coerce  => 1,
     handles => ['content_type'],
 );
 
