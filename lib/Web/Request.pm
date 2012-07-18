@@ -17,22 +17,22 @@ has env => (
         confess "Can't get the env if it wasn't provided during construction";
     },
     handles => {
-        address         => 'REMOTE_ADDR',
-        remote_host     => 'REMOTE_HOST',
-        protocol        => 'SERVER_PROTOCOL',
-        method          => 'REQUEST_METHOD',
-        port            => 'SERVER_PORT',
-        user            => 'REMOTE_USER',
-        request_uri     => 'REQUEST_URI',
-        path_info       => 'PATH_INFO',
-        script_name     => 'SCRIPT_NAME',
-        scheme          => 'psgi.url_scheme',
-        _input          => 'psgi.input',
-        content_length  => 'CONTENT_LENGTH',
-        content_type    => 'CONTENT_TYPE',
-        session         => 'psgix.session',
-        session_options => 'psgix.session.options',
-        logger          => 'psgix.logger',
+        address         => [ get => 'REMOTE_ADDR' ],
+        remote_host     => [ get => 'REMOTE_HOST' ],
+        protocol        => [ get => 'SERVER_PROTOCOL' ],
+        method          => [ get => 'REQUEST_METHOD' ],
+        port            => [ get => 'SERVER_PORT' ],
+        user            => [ get => 'REMOTE_USER' ],
+        request_uri     => [ get => 'REQUEST_URI' ],
+        path_info       => [ get => 'PATH_INFO' ],
+        script_name     => [ get => 'SCRIPT_NAME' ],
+        scheme          => [ get => 'psgi.url_scheme' ],
+        _input          => [ get => 'psgi.input' ],
+        content_length  => [ get => 'CONTENT_LENGTH' ],
+        content_type    => [ get => 'CONTENT_TYPE' ],
+        session         => [ get => 'psgix.session' ],
+        session_options => [ get => 'psgix.session.options' ],
+        logger          => [ get => 'psgix.logger' ],
     },
 );
 
@@ -150,16 +150,16 @@ has _parsed_body => (
         my $cl = $self->content_length;
         if (!$ct && !$cl) {
             return {
-                _content => '',
-                _body    => {},
-                _uploads => {},
+                content => '',
+                body    => {},
+                uploads => {},
             };
         }
 
         my $body = HTTP::Body->new($ct, $cl);
         $body->cleanup(1);
 
-        my $fh = $self->input;
+        my $input = $self->input;
 
         if ($self->env->{'psgix.input.buffered'}) {
             $input->seek(0, 0);
@@ -189,12 +189,16 @@ has _parsed_body => (
         }
 
         return {
-            _content => $content,
-            _body    => $body->param,
-            _uploads => $body->upload,
+            content => $content,
+            body    => $body->param,
+            uploads => $body->upload,
         }
     },
-    handles => ['_content', '_body', '_uploads'],
+    handles => {
+        _content => [ get => 'content' ],
+        _body    => [ get => 'body' ],
+        _uploads => [ get => 'uploads' ],
+    },
 );
 
 has content => (

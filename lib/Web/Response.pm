@@ -80,7 +80,7 @@ sub _finalize_cookies {
 
     my $cookies = $self->cookies;
     for my $name (keys %$cookies) {
-        $headers->push_header(
+        $self->headers->push_header(
             'Set-Cookie' => $self->_bake_cookie($name, $cookies->{name}),
         );
     }
