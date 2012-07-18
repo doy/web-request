@@ -4,18 +4,18 @@ use Moose;
 use HTTP::Headers ();
 use URI::Escape ();
 
-use Web::Response::Types ();
+use Web::Request::Types ();
 
 has status => (
     is      => 'rw',
-    isa     => 'Web::Response::Types::HTTPStatus',
+    isa     => 'Web::Request::Types::HTTPStatus',
     lazy    => 1,
     default => sub { confess "Status was not supplied" },
 );
 
 has headers => (
     is      => 'rw',
-    isa     => 'Web::Response::Types::HTTP::Headers',
+    isa     => 'Web::Request::Types::HTTP::Headers',
     lazy    => 1,
     coerce  => 1,
     default => sub { HTTP::Headers->new },
@@ -30,7 +30,7 @@ has headers => (
 
 has body => (
     is      => 'rw',
-    isa     => 'Web::Response::Types::PSGIBody',
+    isa     => 'Web::Request::Types::PSGIBody',
     lazy    => 1,
     coerce  => 1,
     default => sub { [] },
