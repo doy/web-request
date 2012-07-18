@@ -17,7 +17,7 @@ subtype 'Web::Request::Types::StringLike',
 duck_type 'Web::Request::Types::PSGIBodyObject' => ['getline', 'close'];
 
 subtype 'Web::Request::Types::PSGIBody',
-    as 'ArrayRef[Str]|FileHandle|Web::Request::Types::PSGIBodyObject';
+    as 'ArrayRef[Str|Web::Request::Types::StringLike]|FileHandle|Web::Request::Types::PSGIBodyObject';
 
 subtype 'Web::Request::Types::HTTPStatus',
     as 'Int',
