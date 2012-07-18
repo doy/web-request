@@ -159,7 +159,7 @@ has _parsed_body => (
         my $body = HTTP::Body->new($ct, $cl);
         $body->cleanup(1);
 
-        my $input = $self->input;
+        my $input = $self->_input;
 
         if ($self->env->{'psgix.input.buffered'}) {
             $input->seek(0, 0);
