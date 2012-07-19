@@ -310,8 +310,8 @@ has uploads => (
         for my $key (keys %$uploads) {
             my $val = $uploads->{$key};
             $ret->{$key} = ref($val) eq 'ARRAY'
-                ? $self->new_upload($val->[-1])
-                : $self->new_upload($val);
+                ? $self->_new_upload($val->[-1])
+                : $self->_new_upload($val);
         }
 
         return $ret;
@@ -331,8 +331,8 @@ has all_uploads => (
         for my $key (keys %$uploads) {
             my $val = $uploads->{$key};
             $ret->{$key} = ref($val) eq 'ARRAY'
-                ? [ map { $self->new_upload($_) } @$val ]
-                : [ $self->new_upload($val) ];
+                ? [ map { $self->_new_upload($_) } @$val ]
+                : [ $self->_new_upload($val) ];
         }
 
         return $ret;
@@ -377,7 +377,7 @@ sub new_response {
     $self->response_class->new(@_);
 }
 
-sub new_upload {
+sub _new_upload {
     my $self = shift;
 
     Class::Load::load_class($self->upload_class);
