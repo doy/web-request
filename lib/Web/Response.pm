@@ -1,10 +1,27 @@
 package Web::Response;
 use Moose;
+# ABSTRACT: common response class for web frameworks
 
 use HTTP::Headers ();
 use URI::Escape ();
 
 use Web::Request::Types ();
+
+=head1 SYNOPSIS
+
+  use Web::Request;
+
+  my $app = sub {
+      my ($env) = @_;
+      my $req = Web::Request->new_from_env($env);
+      # ...
+      return $req->new_response(status => 404)->finalize;
+  };
+
+
+=head1 DESCRIPTION
+
+=cut
 
 has status => (
     is      => 'rw',
@@ -137,5 +154,90 @@ sub _date {
 
 __PACKAGE__->meta->make_immutable;
 no Moose;
+
+=head1 CONSTRUCTOR
+
+=head2 new(%params)
+
+Returns a new Web::Response object. Valid parameters are:
+
+=over 4
+
+=item status
+
+The HTTP status code for the response.
+
+=item headers
+
+The headers to return with the response. Can be provided as an arrayref, a
+hashref, or an L<HTTP::Headers> object. Defaults to an L<HTTP::Headers> object
+with no contents.
+
+=item body
+
+The content of the request. Can be provided as a string, an object which
+overloads C<"">, an arrayref containing a list of either of those, a
+filehandle, or an object that implements the C<getline> and C<close> methods.
+Defaults to C<[]>.
+
+=item cookies
+
+A hashref of cookies to return with the response. The values in the hashref can
+either be the string values of the cookies, or a hashref whose keys can be any
+of C<value>, C<domain>, C<path>, C<expires>, C<max-age>, C<secure>,
+C<httponly>. In addition to the date format that C<expires> normally uses,
+C<expires> can also be provided as a UNIX timestamp (an epoch time, as returned
+from C<time>). Defaults to C<{}>.
+
+=back
+
+=cut
+
+=method status($status)
+
+Sets (and returns) the status attribute, as described above.
+
+=method headers($headers)
+
+Sets (and returns) the headers attribute, as described above.
+
+=method header($name, $val)
+
+Shortcut for C<< $ret->headers->header($name, $val) >>.
+
+=method content_length($length)
+
+Shortcut for C<< $ret->headers->content_length($length) >>.
+
+=method content_type($type)
+
+Shortcut for C<< $ret->headers->content_type($type) >>.
+
+=method content_encoding($encoding)
+
+Shortcut for C<< $ret->headers->content_encoding($encoding) >>.
+
+=method location($location)
+
+Shortcut for C<< $ret->headers->header('Location', $location) >>.
+
+=method body($body)
+
+Sets (and returns) the C<body> attribute, as described above.
+
+=method cookies($cookies)
+
+Sets (and returns) the C<cookies> attribute, as described above.
+
+=method redirect($location, $status)
+
+Sets the C<Location> header to $location, and sets the status code to $status
+(defaulting to 302 if not given).
+
+=method finalize
+
+Returns a valid L<PSGI> response, based on the values given.
+
+=cut
 
 1;

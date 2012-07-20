@@ -1,5 +1,6 @@
 package Web::Request;
 use Moose;
+# ABSTRACT: common request class for web frameworks
 
 use Class::Load ();
 use Encode ();
@@ -8,6 +9,20 @@ use HTTP::Headers ();
 use HTTP::Message::PSGI ();
 use URI ();
 use URI::Escape ();
+
+=head1 SYNOPSIS
+
+  use Web::Request;
+
+  my $app = sub {
+      my ($env) = @_;
+      my $req = Web::Request->new_from_env($env);
+      # ...
+  };
+
+=head1 DESCRIPTION
+
+=cut
 
 has env => (
     traits  => ['Hash'],
@@ -423,5 +438,260 @@ sub param {
 
 __PACKAGE__->meta->make_immutable;
 no Moose;
+
+=head1 CONSTRUCTORS
+
+=head2 new_from_env($env)
+
+Create a new Web::Request object from a L<PSGI> environment hashref.
+
+=head2 new_from_request($request)
+
+Create a new Web::Request object from a L<HTTP::Request> object.
+
+=head2 new(%params)
+
+Create a new Web::Request object with named parameters. Valid parameters are:
+
+=over 4
+
+=item env
+
+A L<PSGI> environment hashref.
+
+=item encoding
+
+The encoding to use for decoding all input in the request. Defaults to
+'iso-8859-1'.
+
+=back
+
+=cut
+
+=method address
+
+Returns the IP address of the remote client.
+
+=method remote_host
+
+Returns the hostname of the remote client. May be empty.
+
+=method protocol
+
+Returns the protocol (HTTP/1.0, HTTP/1.1, etc.) used in the current request.
+
+=method method
+
+Returns the HTTP method (GET, POST, etc.) used in the current request.
+
+=method port
+
+Returns the local port that this request was made on.
+
+=method path
+
+Returns the request path for the current request. Unlike C<path_info>, this
+will never be empty, it will always start with C</>. This is most likely what
+you want to use to dispatch on.
+
+=method path_info
+
+Returns the request path for the current request. This can be C<''> if
+C<script_name> ends in a C</>. This can be appended to C<script_name> to get
+the full (absolute) path that was requested from the server.
+
+=method script_name
+
+Returns the absolute path where your application is mounted. It may be C<''>
+(in which case, C<path_info> will start with a C</>).
+
+=method request_uri
+
+Returns the raw, undecoded URI path (the literal path provided in the request,
+so C</foo%20bar> in C<GET /foo%20bar HTTP/1.1>). You most likely want to use
+C<path>, C<path_info>, or C<script_name> instead.
+
+=method scheme
+
+Returns C<http> or C<https> depending on the scheme used in the request.
+
+=method session
+
+Returns the session object, if a middleware is used which provides one. See
+L<PSGI::Extensions>.
+
+=method session_options
+
+Returns the session options hashref, if a middleware is used which provides
+one. See L<PSGI::Extensions>.
+
+=method logger
+
+Returns the logger object, if a middleware is used which provides one. See
+L<PSGI::Extensions>.
+
+=method uri
+
+Returns the full URI used in the current request, as a L<URI> object.
+
+=method base_uri
+
+Returns the base URI for the current request (only the components up through
+C<script_name>) as a L<URI> object.
+
+=method headers
+
+Returns a L<HTTP::Headers> object containing the headers for the current
+request.
+
+=method content_length
+
+The length of the content, in bytes. Corresponds to the C<Content-Length>
+header.
+
+=method content_type
+
+The MIME type of the content. Corresponds to the C<Content-Type> header.
+
+=method content_encoding
+
+The encoding of the content. Corresponds to the C<Content-Encoding> header.
+
+=method referer
+
+Returns the value of the C<Referer> header.
+
+=method user_agent
+
+Returns the value of the C<User-Agent> header.
+
+=method header($name)
+
+Shortcut for C<< $req->headers->header($name) >>.
+
+=method cookies
+
+Returns a hashref of cookies received in this request. The values are URI
+decoded.
+
+=method content
+
+Returns the content received in this request, decoded based on the value of
+C<encoding>.
+
+=method param($param)
+
+Returns the parameter value for the parameter named C<$param>. Returns the last
+parameter given if more than one are passed.
+
+=method parameters
+
+Returns a hashref of parameter names to values. If a name is given more than
+once, the last value is provided.
+
+=method all_parameters
+
+Returns a hashref where the keys are parameter names and the values are
+arrayrefs holding every value given for that parameter name. All parameters are
+stored in an arrayref, even if there is only a single value.
+
+=method query_parameters
+
+Like C<parameters>, but only return the parameters that were given in the query
+string.
+
+=method all_query_parameters
+
+Like C<all_parameters>, but only return the parameters that were given in the
+query string.
+
+=method body_parameters
+
+Like C<parameters>, but only return the parameters that were given in the
+request body.
+
+=method all_body_parameters
+
+Like C<all_parameters>, but only return the parameters that were given in the
+request body.
+
+=method uploads
+
+Returns a hashref of upload objects (instances of C<upload_class>). If more
+than one upload is provided with a given name, returns the last one given.
+
+=method all_uploads
+
+Returns a hashref where the keys are upload names and the values are arrayrefs
+holding an upload object (instance of C<upload_class>) for every upload given
+for that name. All uploads are stored in an arrayref, even if there is only a
+single value.
+
+=method new_response(@params)
+
+Returns a new response object, passing C<@params> to its constructor.
+
+=method env
+
+Returns the L<PSGI> environment that was provided in the constructor (or
+generated from the L<HTTP::Request>, if C<new_from_request> was used).
+
+=method encoding
+
+Returns the encoding that was provided in the constructor.
+
+=method response_class
+
+Returns the name of the class to use when creating a new response object via
+C<new_response>. Defaults to L<Web::Response>. This can be overridden in
+a subclass.
+
+=method upload_class
+
+Returns the name of the class to use when creating a new upload object for
+C<uploads> or C<all_uploads>. Defaults to L<Web::Request::Upload>. This can be
+overridden in a subclass.
+
+=head1 BUGS
+
+No known bugs.
+
+Please report any bugs through RT: email
+C<bug-web-request at rt.cpan.org>, or browse to
+L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=Web-Request>.
+
+=head1 SEE ALSO
+
+L<Plack::Request>
+
+=head1 SUPPORT
+
+You can find this documentation for this module with the perldoc command.
+
+    perldoc Web::Request
+
+You can also look for information at:
+
+=over 4
+
+=item * AnnoCPAN: Annotated CPAN documentation
+
+L<http://annocpan.org/dist/Web-Request>
+
+=item * CPAN Ratings
+
+L<http://cpanratings.perl.org/d/Web-Request>
+
+=item * RT: CPAN's request tracker
+
+L<http://rt.cpan.org/NoAuth/Bugs.html?Dist=Web-Request>
+
+=item * Search CPAN
+
+L<http://search.cpan.org/dist/Web-Request>
+
+=back
+
+=cut
 
 1;
