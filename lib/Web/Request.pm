@@ -146,6 +146,7 @@ has cookies => (
             my ($key, $value) = map {
                 URI::Escape::uri_unescape($_)
             } split(/=/, $pair, 2);
+            # XXX $self->decode too?
             $results{$key} = $value unless exists $results{$key};
         }
 
