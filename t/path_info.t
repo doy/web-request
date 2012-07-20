@@ -12,7 +12,7 @@ my $path_app = sub {
     my $req = Web::Request->new_from_env(shift);
     my $res = $req->new_response(status => 200);
     $res->content_type('text/plain');
-    $res->body($req->path_info);
+    $res->content($req->path_info);
     return $res->finalize;
 };
 

@@ -16,8 +16,8 @@ sub res {
 
 is_deeply(
     res(
-        status => 200,
-        body => 'hello',
+        status  => 200,
+        content => 'hello',
     ),
     [ 200, +[], [ 'hello' ] ]
 );
@@ -38,7 +38,7 @@ is_deeply(
                 path => '/',
             },
         },
-        body   => 'hello',
+        content => 'hello',
     ),
     [
         200,

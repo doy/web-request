@@ -10,7 +10,7 @@ use Web::Response;
 
 sub r($) {
     my $res = Web::Response->new(status => 200);
-    $res->body(@_);
+    $res->content(@_);
     return $res->finalize->[2];
 }
 

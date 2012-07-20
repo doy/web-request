@@ -45,7 +45,7 @@ has headers => (
     },
 );
 
-has body => (
+has content => (
     is      => 'rw',
     isa     => 'Web::Request::Types::PSGIBody',
     lazy    => 1,
@@ -88,7 +88,7 @@ sub finalize {
                 } $self->header($k);
             } $self->headers->header_field_names
         ],
-        $self->body
+        $self->content
     ];
 }
 
@@ -173,7 +173,7 @@ The headers to return with the response. Can be provided as an arrayref, a
 hashref, or an L<HTTP::Headers> object. Defaults to an L<HTTP::Headers> object
 with no contents.
 
-=item body
+=item content
 
 The content of the request. Can be provided as a string, an object which
 overloads C<"">, an arrayref containing a list of either of those, a
@@ -221,9 +221,9 @@ Shortcut for C<< $ret->headers->content_encoding($encoding) >>.
 
 Shortcut for C<< $ret->headers->header('Location', $location) >>.
 
-=method body($body)
+=method content($content)
 
-Sets (and returns) the C<body> attribute, as described above.
+Sets (and returns) the C<content> attribute, as described above.
 
 =method cookies($cookies)
 
