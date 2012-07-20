@@ -38,7 +38,6 @@ has env => (
         protocol        => [ get => 'SERVER_PROTOCOL' ],
         method          => [ get => 'REQUEST_METHOD' ],
         port            => [ get => 'SERVER_PORT' ],
-        user            => [ get => 'REMOTE_USER' ],
         request_uri     => [ get => 'REQUEST_URI' ],
         path_info       => [ get => 'PATH_INFO' ],
         script_name     => [ get => 'SCRIPT_NAME' ],
