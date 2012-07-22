@@ -25,14 +25,11 @@ use URI::Escape ();
 =cut
 
 has env => (
-    traits  => ['Hash'],
-    is      => 'ro',
-    isa     => 'HashRef',
-    lazy    => 1,
-    default => sub {
-        confess "Can't get the env if it wasn't provided during construction";
-    },
-    handles => {
+    traits   => ['Hash'],
+    is       => 'ro',
+    isa      => 'HashRef',
+    required => 1,
+    handles  => {
         address         => [ get => 'REMOTE_ADDR' ],
         remote_host     => [ get => 'REMOTE_HOST' ],
         protocol        => [ get => 'SERVER_PROTOCOL' ],
@@ -476,7 +473,7 @@ Create a new Web::Request object with named parameters. Valid parameters are:
 
 =item env
 
-A L<PSGI> environment hashref.
+A L<PSGI> environment hashref. Required.
 
 =item encoding
 
