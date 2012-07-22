@@ -22,6 +22,23 @@ use URI::Escape ();
 
 =head1 DESCRIPTION
 
+Web::Request is a request class for L<PSGI> applications. It provides access to
+all of the information received in a request, generated from the PSGI
+environment. The available methods are listed below.
+
+Note that Web::Request objects are intended to be (almost) entirely read-only -
+although some methods (C<headers>, C<uri>, etc) may return mutable objects,
+changing those objects will have no effect on the actual environment, or the
+return values of any of the other methods. Doing this is entirely unsupported.
+In addition, the return values of most methods that aren't direct accesses to
+C<env> are cached, so if you do modify the actual environment hashref, you
+should create a new Web::Request object for it.
+
+The one exception is the C<encoding> attribute, which is allowed to be
+modified. Changing the encoding will change the return value of any subsequent
+calls to C<content>, C<query_parameters>, C<all_query_parameters>,
+C<body_parameters>, and C<all_body_parameters>.
+
 =cut
 
 has env => (

@@ -21,6 +21,15 @@ use Web::Request::Types ();
 
 =head1 DESCRIPTION
 
+Web::Response is a response class for L<PSGI> applications. Generally, you will
+want to create instances of this class via C<new_response> on the request
+object, since that allows a framework which subclasses L<Web::Request> to also
+return an appropriate subclass of Web::Response.
+
+All attributes on Web::Response objects are writable, and the final state of
+them will be used to generate a real L<PSGI> response when C<finalize> is
+called.
+
 =cut
 
 has status => (

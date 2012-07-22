@@ -18,6 +18,11 @@ use Web::Request::Types;
 
 =head1 DESCRIPTION
 
+This class represents a single uploaded file, generally from an C<< <input
+type="file" /> >> element. You most likely don't want to create instances of
+this class yourself; they will be created for you via the C<uploads> method on
+L<Web::Request>.
+
 =cut
 
 has headers => (
