@@ -228,6 +228,7 @@ has content => (
     is      => 'ro',
     isa     => 'Str',
     lazy    => 1,
+    clearer => '_clear_content',
     default => sub {
         my $self = shift;
 
@@ -241,6 +242,7 @@ has query_parameters => (
     is      => 'ro',
     isa     => 'HashRef[Str]',
     lazy    => 1,
+    clearer => '_clear_query_parameters',
     default => sub {
         my $self = shift;
 
@@ -258,6 +260,7 @@ has all_query_parameters => (
     is      => 'ro',
     isa     => 'HashRef[ArrayRef[Str]]',
     lazy    => 1,
+    clearer => '_clear_all_query_parameters',
     default => sub {
         my $self = shift;
 
@@ -276,6 +279,7 @@ has body_parameters => (
     is      => 'ro',
     isa     => 'HashRef[Str]',
     lazy    => 1,
+    clearer => '_clear_body_parameters',
     default => sub {
         my $self = shift;
 
@@ -295,6 +299,7 @@ has all_body_parameters => (
     is      => 'ro',
     isa     => 'HashRef[ArrayRef[Str]]',
     lazy    => 1,
+    clearer => '_clear_all_body_parameters',
     default => sub {
         my $self = shift;
 
@@ -355,15 +360,25 @@ has all_uploads => (
 );
 
 has encoding => (
-    is      => 'ro',
+    is      => 'rw',
     isa     => 'Str',
     default => 'iso-8859-1',
+    trigger => sub {
+        my $self = shift;
+        $self->_clear_encoding_obj;
+        $self->_clear_content;
+        $self->_clear_query_parameters;
+        $self->_clear_all_query_parameters;
+        $self->_clear_body_parameters;
+        $self->_clear_all_body_parameters;
+    },
 );
 
 has _encoding_obj => (
     is      => 'ro',
     isa     => 'Object', # no idea what this should be
     lazy    => 1,
+    clearer => '_clear_encoding_obj',
     default => sub { Encode::find_encoding(shift->encoding) },
     handles => ['decode', 'encode'],
 );
