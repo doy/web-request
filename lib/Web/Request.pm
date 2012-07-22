@@ -251,7 +251,7 @@ has query_parameters => (
             (map { $_ => '' } $self->uri->query_keywords),
         );
         return {
-            map { $_ => $self->decode($params{$_}) } keys %params
+            map { $self->decode($_) } map { $_ => $params{$_} } keys %params
         };
     },
 );
@@ -268,6 +268,7 @@ has all_query_parameters => (
         my $ret = {};
 
         while (my ($k, $v) = splice @params, 0, 2) {
+            $k = $self->decode($k);
             push @{ $ret->{$k} ||= [] }, $self->decode($v);
         }
 
@@ -288,6 +289,7 @@ has body_parameters => (
         my $ret = {};
         for my $key (keys %$body) {
             my $val = $body->{$key};
+            $key = $self->decode($key);
             $ret->{$key} = $self->decode(ref($val) ? $val->[-1] : $val);
         }
 
@@ -308,6 +310,7 @@ has all_body_parameters => (
         my $ret = {};
         for my $key (keys %$body) {
             my $val = $body->{$key};
+            $key = $self->decode($key);
             $ret->{$key} = ref($val)
                 ? [ map { $self->decode($_) } @$val ]
                 : [ $self->decode($val) ];
