@@ -365,7 +365,7 @@ has all_uploads => (
 has encoding => (
     is      => 'rw',
     isa     => 'Str',
-    default => 'iso-8859-1',
+    builder => 'default_encoding',
     trigger => sub {
         my $self = shift;
         $self->_clear_encoding_obj;
@@ -399,9 +399,6 @@ sub new_from_request {
 
     return $class->new_from_env(HTTP::Message::PSGI::req_to_psgi($req));
 }
-
-sub response_class { 'Web::Response' }
-sub upload_class   { 'Web::Request::Upload' }
 
 sub new_response {
     my $self = shift;
@@ -454,6 +451,10 @@ sub param {
     $self->parameters->{$key};
 }
 
+sub response_class   { 'Web::Response'        }
+sub upload_class     { 'Web::Request::Upload' }
+sub default_encoding { 'iso8859-1'            }
+
 __PACKAGE__->meta->make_immutable;
 no Moose;
 
@@ -480,7 +481,7 @@ A L<PSGI> environment hashref.
 =item encoding
 
 The encoding to use for decoding all input in the request. Defaults to
-'iso-8859-1'.
+the value of C<default_encoding>.
 
 =back
 
@@ -669,6 +670,11 @@ a subclass.
 Returns the name of the class to use when creating a new upload object for
 C<uploads> or C<all_uploads>. Defaults to L<Web::Request::Upload>. This can be
 overridden in a subclass.
+
+=method default_encoding
+
+Returns the name of the default encoding to use for C<encode> and C<decode>.
+Defaults to iso8859-1. This can be overridden in a subclass.
 
 =head1 BUGS
 
