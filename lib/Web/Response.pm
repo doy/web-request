@@ -3,6 +3,7 @@ use Moose;
 # ABSTRACT: common response class for web frameworks
 
 use HTTP::Headers ();
+use Plack::Util ();
 use URI::Escape ();
 
 use Web::Request::Types ();
@@ -69,6 +70,15 @@ has cookies => (
     default => sub { +{} },
 );
 
+has _encoding_obj => (
+    is        => 'ro',
+    isa       => 'Object',
+    predicate => 'has_encoding',
+    handles   => {
+        encoding => 'name',
+    },
+);
+
 sub redirect {
     my $self = shift;
     my ($url, $status) = @_;
@@ -82,7 +92,7 @@ sub finalize {
 
     $self->_finalize_cookies;
 
-    return [
+    my $res = [
         $self->status,
         [
             map {
@@ -99,6 +109,23 @@ sub finalize {
         ],
         $self->content
     ];
+
+    return $res unless $self->has_encoding;
+
+    return Plack::Util::response_cb($res, sub {
+        return sub {
+            my $chunk = shift;
+            return unless defined $chunk;
+            return $self->encode($chunk);
+        };
+    });
+}
+
+sub encode {
+    my $self = shift;
+    my ($content) = @_;
+    return $content unless $self->has_encoding;
+    return $self->_encoding_obj->encode($content);
 }
 
 sub _finalize_cookies {

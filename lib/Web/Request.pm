@@ -377,17 +377,14 @@ has all_uploads => (
 );
 
 has encoding => (
-    is      => 'rw',
-    isa     => 'Str',
-    builder => 'default_encoding',
-    trigger => sub {
+    accessor  => '_encoding',
+    isa       => 'Str',
+    predicate => 'has_encoding',
+    clearer   => '_clear_encoding',
+    builder   => 'default_encoding',
+    trigger   => sub {
         my $self = shift;
-        $self->_clear_encoding_obj;
-        $self->_clear_content;
-        $self->_clear_query_parameters;
-        $self->_clear_all_query_parameters;
-        $self->_clear_body_parameters;
-        $self->_clear_all_body_parameters;
+        $self->_clear_encoded_data;
     },
 );
 
@@ -397,8 +394,14 @@ has _encoding_obj => (
     lazy    => 1,
     clearer => '_clear_encoding_obj',
     default => sub { Encode::find_encoding(shift->encoding) },
-    handles => ['decode', 'encode'],
 );
+
+sub BUILDARGS {
+    my $class = shift;
+    my $params = $class->SUPER::BUILDARGS(@_);
+    delete $params->{encoding} unless defined $params->{encoding};
+    return $params;
+}
 
 sub new_from_env {
     my $class = shift;
@@ -418,7 +421,7 @@ sub new_response {
     my $self = shift;
 
     Class::Load::load_class($self->response_class);
-    $self->response_class->new(@_);
+    $self->response_class->new(_encoding_obj => $self->_encoding_obj, @_);
 }
 
 sub _new_upload {
@@ -465,6 +468,39 @@ sub param {
     $self->parameters->{$key};
 }
 
+sub decode {
+    my $self = shift;
+    my ($content) = @_;
+    return $content unless $self->has_encoding;
+    return $self->_encoding_obj->decode($content);
+}
+
+sub encoding {
+    my $self = shift;
+    my ($encoding) = @_;
+
+    return $self->_encoding unless @_;
+
+    if (defined($encoding)) {
+        return $self->_encoding($encoding);
+    }
+    else {
+        $self->_clear_encoding;
+        $self->_clear_encoded_data;
+        return;
+    }
+}
+
+sub _clear_encoded_data {
+    my $self = shift;
+    $self->_clear_encoding_obj;
+    $self->_clear_content;
+    $self->_clear_query_parameters;
+    $self->_clear_all_query_parameters;
+    $self->_clear_body_parameters;
+    $self->_clear_all_body_parameters;
+}
+
 sub response_class   { 'Web::Response'        }
 sub upload_class     { 'Web::Request::Upload' }
 sub default_encoding { 'iso8859-1'            }
@@ -494,8 +530,9 @@ A L<PSGI> environment hashref. Required.
 
 =item encoding
 
-The encoding to use for decoding all input in the request. Defaults to
-the value of C<default_encoding>.
+The encoding to use for decoding all input in the request and encoding all
+output in the response. Defaults to the value of C<default_encoding>. If
+C<undef> is passed, no encoding or decoding will be done.
 
 =back
 
@@ -669,9 +706,14 @@ Returns a new response object, passing C<@params> to its constructor.
 Returns the L<PSGI> environment that was provided in the constructor (or
 generated from the L<HTTP::Request>, if C<new_from_request> was used).
 
-=method encoding
+=method encoding($enc)
 
-Returns the encoding that was provided in the constructor.
+Returns the encoding that was provided in the constructor. You can also pass an
+encoding name to this method to set the encoding that will be used to decode
+the content and encode the response. For instance, you can set the encoding to
+UTF-8 in order to read the body content and parameters, and then set the
+encoding to C<undef> at the end of the handler in order to indicate that the
+response should not be encoded (for instance, if it is a binary file).
 
 =method response_class
 
@@ -687,8 +729,8 @@ overridden in a subclass.
 
 =method default_encoding
 
-Returns the name of the default encoding to use for C<encode> and C<decode>.
-Defaults to iso8859-1. This can be overridden in a subclass.
+Returns the name of the default encoding to use for C<decode>. Defaults to
+iso8859-1. This can be overridden in a subclass.
 
 =head1 BUGS
 
