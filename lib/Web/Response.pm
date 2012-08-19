@@ -79,6 +79,25 @@ has _encoding_obj => (
     },
 );
 
+sub BUILDARGS {
+    my $class = shift;
+
+    if (@_ == 1 && ref($_[0]) eq 'ARRAY') {
+        return {
+            status => $_[0][0],
+            (@{ $_[0] } > 1
+                ? (headers => $_[0][1])
+                : ()),
+            (@{ $_[0] } > 2
+                ? (content => $_[0][2])
+                : ()),
+        };
+    }
+    else {
+        return $class->SUPER::BUILDARGS(@_);
+    }
+}
+
 sub redirect {
     my $self = shift;
     my ($url, $status) = @_;

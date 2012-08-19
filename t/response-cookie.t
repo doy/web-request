@@ -8,7 +8,7 @@ use HTTP::Request::Common;
 use Web::Response;
 
 my $app = sub {
-    my $res = Web::Response->new(status => 200);
+    my $res = Web::Response->new([200]);
 
     $res->cookies->{t1} = { value => "bar", domain => '.example.com', path => '/cgi-bin' };
     $res->cookies->{t2} = { value => "xxx yyy", expires => time + 3600 };
