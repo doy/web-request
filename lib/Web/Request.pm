@@ -421,7 +421,9 @@ sub new_response {
     my $self = shift;
 
     Class::Load::load_class($self->response_class);
-    $self->response_class->new(_encoding_obj => $self->_encoding_obj, @_);
+    my $res = $self->response_class->new(@_);
+    $res->_encoding_obj($self->_encoding_obj);
+    return $res;
 }
 
 sub _new_upload {

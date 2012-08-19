@@ -71,7 +71,7 @@ has cookies => (
 );
 
 has _encoding_obj => (
-    is        => 'ro',
+    is        => 'rw',
     isa       => 'Object',
     predicate => 'has_encoding',
     handles   => {
