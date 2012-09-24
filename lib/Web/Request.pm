@@ -422,7 +422,8 @@ sub new_response {
 
     Class::Load::load_class($self->response_class);
     my $res = $self->response_class->new(@_);
-    $res->_encoding_obj($self->_encoding_obj);
+    $res->_encoding_obj($self->_encoding_obj)
+        if $self->has_encoding;
     return $res;
 }
 

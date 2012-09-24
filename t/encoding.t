@@ -119,4 +119,66 @@ use Web::Request;
         };
 }
 
+{
+    my $app = sub {
+        my ($env) = @_;
+        my $req = Web::Request->new_from_env($env);
+        return $req->new_response(
+            status  => 200,
+            content => "café",
+        )->finalize;
+    };
+
+    test_psgi
+        app    => $app,
+        client => sub {
+            my ($cb) = @_;
+            my $res = $cb->(GET '/');
+            ok($res->is_success) || diag($res->content);
+            is($res->content, "caf\xe9", "content encoded with latin1");
+        };
+}
+
+{
+    my $app = sub {
+        my ($env) = @_;
+        my $req = Web::Request->new_from_env($env);
+        $req->encoding('UTF-8');
+        return $req->new_response(
+            status  => 200,
+            content => "café",
+        )->finalize;
+    };
+
+    test_psgi
+        app    => $app,
+        client => sub {
+            my ($cb) = @_;
+            my $res = $cb->(GET '/');
+            ok($res->is_success) || diag($res->content);
+            is($res->content, "caf\xc3\xa9", "content encoded with UTF-8");
+        };
+}
+
+{
+    my $app = sub {
+        my ($env) = @_;
+        my $req = Web::Request->new_from_env($env);
+        $req->encoding(undef);
+        return $req->new_response(
+            status  => 200,
+            content => "\x01\x02\xf3",
+        )->finalize;
+    };
+
+    test_psgi
+        app    => $app,
+        client => sub {
+            my ($cb) = @_;
+            my $res = $cb->(GET '/');
+            ok($res->is_success) || diag($res->content);
+            is($res->content, "\x01\x02\xf3", "unencoded content");
+        };
+}
+
 done_testing;
