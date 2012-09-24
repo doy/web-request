@@ -376,31 +376,22 @@ has all_uploads => (
     },
 );
 
-has encoding => (
-    accessor  => '_encoding',
-    isa       => 'Str',
-    predicate => 'has_encoding',
-    clearer   => '_clear_encoding',
-    builder   => 'default_encoding',
-    trigger   => sub {
-        my $self = shift;
-        $self->_clear_encoded_data;
-    },
-);
-
 has _encoding_obj => (
-    is      => 'ro',
-    isa     => 'Object', # no idea what this should be
-    lazy    => 1,
-    clearer => '_clear_encoding_obj',
-    default => sub { Encode::find_encoding(shift->encoding) },
+    is        => 'rw',
+    isa       => 'Object', # no idea what this should be
+    clearer   => '_clear_encoding_obj',
+    predicate => 'has_encoding',
 );
 
-sub BUILDARGS {
-    my $class = shift;
-    my $params = $class->SUPER::BUILDARGS(@_);
-    delete $params->{encoding} unless defined $params->{encoding};
-    return $params;
+sub BUILD {
+    my $self = shift;
+    my ($params) = @_;
+    if (defined $params->{encoding}) {
+        $self->encoding($params->{encoding});
+    }
+    else {
+        $self->encoding($self->default_encoding);
+    }
 }
 
 sub new_from_env {
@@ -480,18 +471,19 @@ sub decode {
 
 sub encoding {
     my $self = shift;
-    my ($encoding) = @_;
 
-    return $self->_encoding unless @_;
-
-    if (defined($encoding)) {
-        return $self->_encoding($encoding);
-    }
-    else {
-        $self->_clear_encoding;
+    if (@_ > 0) {
+        my ($encoding) = @_;
         $self->_clear_encoded_data;
-        return;
+        if (defined($encoding)) {
+            $self->_encoding_obj(Encode::find_encoding($encoding));
+        }
+        else {
+            $self->_clear_encoding_obj;
+        }
     }
+
+    return $self->_encoding_obj ? $self->_encoding_obj->name : undef;
 }
 
 sub _clear_encoded_data {
