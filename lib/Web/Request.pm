@@ -767,6 +767,9 @@ L<http://search.cpan.org/dist/Web-Request>
 
 =back
 
+=for Pod::Coverage
+  BUILD
+
 =cut
 
 1;
