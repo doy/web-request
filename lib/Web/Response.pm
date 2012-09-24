@@ -135,12 +135,12 @@ sub finalize {
         return sub {
             my $chunk = shift;
             return unless defined $chunk;
-            return $self->encode($chunk);
+            return $self->_encode($chunk);
         };
     });
 }
 
-sub encode {
+sub _encode {
     my $self = shift;
     my ($content) = @_;
     return $content unless $self->has_encoding;

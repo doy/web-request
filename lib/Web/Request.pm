@@ -248,7 +248,7 @@ has content => (
 
         # XXX get Plack::TempBuffer onto CPAN separately, so that this doesn't
         # always have to be sitting in memory
-        return $self->decode($self->_parsed_body->{content});
+        return $self->_decode($self->_parsed_body->{content});
     },
 );
 
@@ -265,7 +265,7 @@ has query_parameters => (
             (map { $_ => '' } $self->uri->query_keywords),
         );
         return {
-            map { $self->decode($_) } map { $_ => $params{$_} } keys %params
+            map { $self->_decode($_) } map { $_ => $params{$_} } keys %params
         };
     },
 );
@@ -282,8 +282,8 @@ has all_query_parameters => (
         my $ret = {};
 
         while (my ($k, $v) = splice @params, 0, 2) {
-            $k = $self->decode($k);
-            push @{ $ret->{$k} ||= [] }, $self->decode($v);
+            $k = $self->_decode($k);
+            push @{ $ret->{$k} ||= [] }, $self->_decode($v);
         }
 
         return $ret;
@@ -303,8 +303,8 @@ has body_parameters => (
         my $ret = {};
         for my $key (keys %$body) {
             my $val = $body->{$key};
-            $key = $self->decode($key);
-            $ret->{$key} = $self->decode(ref($val) ? $val->[-1] : $val);
+            $key = $self->_decode($key);
+            $ret->{$key} = $self->_decode(ref($val) ? $val->[-1] : $val);
         }
 
         return $ret;
@@ -324,10 +324,10 @@ has all_body_parameters => (
         my $ret = {};
         for my $key (keys %$body) {
             my $val = $body->{$key};
-            $key = $self->decode($key);
+            $key = $self->_decode($key);
             $ret->{$key} = ref($val)
-                ? [ map { $self->decode($_) } @$val ]
-                : [ $self->decode($val) ];
+                ? [ map { $self->_decode($_) } @$val ]
+                : [ $self->_decode($val) ];
         }
 
         return $ret;
@@ -462,7 +462,7 @@ sub param {
     $self->parameters->{$key};
 }
 
-sub decode {
+sub _decode {
     my $self = shift;
     my ($content) = @_;
     return $content unless $self->has_encoding;
@@ -724,7 +724,7 @@ overridden in a subclass.
 
 =method default_encoding
 
-Returns the name of the default encoding to use for C<decode>. Defaults to
+Returns the name of the default encoding to use for decoding. Defaults to
 iso8859-1. This can be overridden in a subclass.
 
 =head1 BUGS
