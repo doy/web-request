@@ -39,6 +39,12 @@ modified. Changing the encoding will change the return value of any subsequent
 calls to C<content>, C<query_parameters>, C<all_query_parameters>,
 C<body_parameters>, and C<all_body_parameters>.
 
+Web::Request is based heavily on L<Plack::Request>, but with the intention of
+growing to become more generally useful to end users (rather than just
+framework and middleware developers). In the future, it is expected to grow in
+functionality to support a lot more convenient functionality, while
+Plack::Request has a more minimalist goal.
+
 =cut
 
 has env => (
@@ -737,7 +743,8 @@ L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=Web-Request>.
 
 =head1 SEE ALSO
 
-L<Plack::Request>
+L<Plack::Request> - Much of this module's API and implementation were taken
+from Plack::Request.
 
 =head1 SUPPORT
 
