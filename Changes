@@ -1,6 +1,8 @@
 Revision history for Web-Request
 
 {{$NEXT}}
+
+0.02  2012-09-27
       - add 'host' method for accessing the Host header (with a fallback)
 
 0.01  2012-09-24
