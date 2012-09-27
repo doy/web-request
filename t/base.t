@@ -26,11 +26,13 @@ my @tests = (
   { scheme => 'http',
     server_name => 'example.com',
     server_port => 80,
-    base => 'http://example.com/' },
+    base => 'http://example.com/',
+    expected_host => 'example.com:80' },
   { scheme => 'http',
     server_name => 'example.com',
     server_port => 8080,
-    base => 'http://example.com:8080/' },
+    base => 'http://example.com:8080/',
+    expected_host => 'example.com:8080' },
   { host => 'foobar.com',
     server_name => 'example.com',
     server_port => 8080,
@@ -48,6 +50,8 @@ for my $block (@tests) {
 
     my $req = Web::Request->new_from_env($env);
     is $req->base_uri, $block->{base};
+    my $expected_host = $block->{expected_host} || $block->{host};
+    is $req->host, $expected_host;
 }
 
 done_testing;

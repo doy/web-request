@@ -81,10 +81,7 @@ has _base_uri => (
         my $env = $self->env;
 
         my $scheme = $self->scheme || "http";
-        my $server = $env->{HTTP_HOST};
-        $server = ($env->{SERVER_NAME} || '') . ':'
-                . ($env->{SERVER_PORT} || 80)
-            unless defined $server;
+        my $server = $self->host;
         my $path = $self->script_name || '/';
 
         return "${scheme}://${server}${path}";
@@ -431,6 +428,18 @@ sub _new_upload {
     $self->upload_class->new(@_);
 }
 
+sub host {
+    my $self = shift;
+
+    my $env = $self->env;
+    my $host = $env->{HTTP_HOST};
+    $host = ($env->{SERVER_NAME} || '') . ':'
+          . ($env->{SERVER_PORT} || 80)
+        unless defined $host;
+
+    return $host;
+}
+
 sub path {
     my $self = shift;
 
@@ -558,6 +567,12 @@ Returns the HTTP method (GET, POST, etc.) used in the current request.
 =method port
 
 Returns the local port that this request was made on.
+
+=method host
+
+Returns the contents of the HTTP C<Host> header. If it doesn't exist, falls
+back to recreating the host from the C<SERVER_NAME> and C<SERVER_PORT>
+variables.
 
 =method path
 
