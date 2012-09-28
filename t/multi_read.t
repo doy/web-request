@@ -21,7 +21,8 @@ my $app = sub {
 test_psgi $app, sub {
     my $cb = shift;
     my $res = $cb->(POST "/", { foo => "bar" });
-    ok $res->is_success;
+    ok($res->is_success)
+        || diag($res->status_line . "\n" . $res->content);
 };
 
 done_testing;
