@@ -178,7 +178,6 @@ has _http_body => (
 
 has _parsed_body => (
     traits  => ['Hash'],
-    is      => 'ro',
     isa     => 'HashRef',
     lazy    => 1,
     default => sub {
@@ -251,7 +250,7 @@ has content => (
 
         # XXX get Plack::TempBuffer onto CPAN separately, so that this doesn't
         # always have to be sitting in memory
-        return $self->_decode($self->_parsed_body->{content});
+        return $self->_decode($self->_content);
     },
 );
 
