@@ -1,6 +1,8 @@
 Revision history for Web-Request
 
 {{$NEXT}}
+
+0.03  2012-09-28
       - add some diagnostics to a test to see if i can get some better feedback
         from cpantesters failures
 
