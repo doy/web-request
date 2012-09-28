@@ -1,6 +1,8 @@
 Revision history for Web-Request
 
 {{$NEXT}}
+      - add some diagnostics to a test to see if i can get some better feedback
+        from cpantesters failures
 
 0.02  2012-09-27
       - add 'host' method for accessing the Host header (with a fallback)
