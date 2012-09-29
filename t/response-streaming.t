@@ -60,6 +60,70 @@ use Web::Response;
     );
 }
 
+{
+    my $res = Web::Response->new(sub {
+        my $responder = shift;
+        my $writer = $responder->([200, []]);
+        $writer->write("Hello");
+        $writer->write(" ");
+        $writer->write("world");
+        $writer->close;
+    });
+    my $psgi_res = $res->finalize;
+    ok(ref($psgi_res) eq 'CODE', "got a coderef");
+
+    is_deeply(
+        resolve_response($psgi_res),
+        [ 200, [], ["Hello", " ", "world"] ],
+        "got the right response"
+    );
+}
+
+{
+    use utf8;
+
+    my $req = Web::Request->new_from_env({});
+
+    my $res = $req->new_response(sub {
+        my $responder = shift;
+        my $writer = $responder->([200, []]);
+        $writer->write("ca");
+        $writer->write("fé");
+        $writer->close;
+    });
+    my $psgi_res = $res->finalize;
+    ok(ref($psgi_res) eq 'CODE', "got a coderef");
+
+    is_deeply(
+        resolve_response($psgi_res),
+        [ 200, [], ["ca", "f\xe9"] ],
+        "got the right response"
+    );
+}
+
+{
+    use utf8;
+
+    my $req = Web::Request->new_from_env({});
+    $req->encoding('UTF-8');
+
+    my $res = $req->new_response(sub {
+        my $responder = shift;
+        my $writer = $responder->([200, []]);
+        $writer->write("ca");
+        $writer->write("fé");
+        $writer->close;
+    });
+    my $psgi_res = $res->finalize;
+    ok(ref($psgi_res) eq 'CODE', "got a coderef");
+
+    is_deeply(
+        resolve_response($psgi_res),
+        [ 200, [], ["ca", "f\xc3\xa9"] ],
+        "got the right response"
+    );
+}
+
 sub resolve_response {
     my ($psgi_res) = @_;
 
