@@ -63,6 +63,12 @@ has content => (
     default => sub { [] },
 );
 
+has streaming_response => (
+    is        => 'rw',
+    isa       => 'CodeRef',
+    predicate => 'has_streaming_response',
+);
+
 has cookies => (
     is      => 'rw',
     isa     => 'HashRef[Str|HashRef[Str]]',
@@ -93,6 +99,11 @@ sub BUILDARGS {
                 : ()),
         };
     }
+    elsif (@_ == 1 && ref($_[0]) eq 'CODE') {
+        return {
+            streaming_response => $_[0],
+        };
+    }
     else {
         return $class->SUPER::BUILDARGS(@_);
     }
@@ -108,6 +119,9 @@ sub redirect {
 
 sub finalize {
     my $self = shift;
+
+    return $self->_finalize_streaming
+        if $self->has_streaming_response;
 
     $self->_finalize_cookies;
 
@@ -138,6 +152,15 @@ sub finalize {
             return $self->_encode($chunk);
         };
     });
+}
+
+sub _finalize_streaming {
+    my $self = shift;
+
+    # XXX cookies?
+    # XXX encoding?
+
+    return $self->streaming_response;
 }
 
 sub _encode {
