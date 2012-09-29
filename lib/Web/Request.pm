@@ -201,13 +201,13 @@ has _parsed_body => (
         my $input = $self->_input;
 
         if ($self->env->{'psgix.input.buffered'}) {
-            $input->seek(0, 0);
+            seek $input, 0, 0;
         }
 
         my $content = '';
         my $spin = 0;
         while ($cl) {
-            $input->read(my $chunk, $cl < 8192 ? $cl : 8192);
+            read $input, my $chunk, $cl < 8192 ? $cl : 8192;
             my $read = length($chunk);
             $cl -= $read;
             $body->add($chunk);
@@ -219,7 +219,7 @@ has _parsed_body => (
         }
 
         if ($self->env->{'psgix.input.buffered'}) {
-            $input->seek(0, 0);
+            seek $input, 0, 0;
         }
         else {
             open my $fh, '<', \$content;
