@@ -3,7 +3,6 @@ use strict;
 use warnings;
 use Test::More;
 
-use Web::Request;
 use Web::Response;
 
 {
@@ -17,45 +16,6 @@ use Web::Response;
     is_deeply(
         resolve_response($psgi_res),
         [ 200, [], ["Hello world"] ],
-        "got the right response"
-    );
-}
-
-{
-    use utf8;
-
-    my $req = Web::Request->new_from_env({});
-
-    my $res = $req->new_response(sub {
-        my $responder = shift;
-        $responder->([200, [], ["café"]]);
-    });
-    my $psgi_res = $res->finalize;
-    ok(ref($psgi_res) eq 'CODE', "got a coderef");
-
-    is_deeply(
-        resolve_response($psgi_res),
-        [ 200, [], ["caf\xe9"] ],
-        "got the right response"
-    );
-}
-
-{
-    use utf8;
-
-    my $req = Web::Request->new_from_env({});
-    $req->encoding('UTF-8');
-
-    my $res = $req->new_response(sub {
-        my $responder = shift;
-        $responder->([200, [], ["café"]]);
-    });
-    my $psgi_res = $res->finalize;
-    ok(ref($psgi_res) eq 'CODE', "got a coderef");
-
-    is_deeply(
-        resolve_response($psgi_res),
-        [ 200, [], ["caf\xc3\xa9"] ],
         "got the right response"
     );
 }
@@ -75,51 +35,6 @@ use Web::Response;
     is_deeply(
         resolve_response($psgi_res),
         [ 200, [], ["Hello", " ", "world"] ],
-        "got the right response"
-    );
-}
-
-{
-    use utf8;
-
-    my $req = Web::Request->new_from_env({});
-
-    my $res = $req->new_response(sub {
-        my $responder = shift;
-        my $writer = $responder->([200, []]);
-        $writer->write("ca");
-        $writer->write("fé");
-        $writer->close;
-    });
-    my $psgi_res = $res->finalize;
-    ok(ref($psgi_res) eq 'CODE', "got a coderef");
-
-    is_deeply(
-        resolve_response($psgi_res),
-        [ 200, [], ["ca", "f\xe9"] ],
-        "got the right response"
-    );
-}
-
-{
-    use utf8;
-
-    my $req = Web::Request->new_from_env({});
-    $req->encoding('UTF-8');
-
-    my $res = $req->new_response(sub {
-        my $responder = shift;
-        my $writer = $responder->([200, []]);
-        $writer->write("ca");
-        $writer->write("fé");
-        $writer->close;
-    });
-    my $psgi_res = $res->finalize;
-    ok(ref($psgi_res) eq 'CODE', "got a coderef");
-
-    is_deeply(
-        resolve_response($psgi_res),
-        [ 200, [], ["ca", "f\xc3\xa9"] ],
         "got the right response"
     );
 }
