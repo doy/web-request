@@ -157,10 +157,19 @@ sub finalize {
 sub _finalize_streaming {
     my $self = shift;
 
-    # XXX cookies?
-    # XXX encoding?
+    my $streaming = $self->streaming_response;
 
-    return $self->streaming_response;
+    # XXX cookies?
+
+    return $streaming unless $self->has_encoding;
+
+    return Plack::Util::response_cb($streaming, sub {
+        return sub {
+            my $chunk = shift;
+            return unless defined $chunk;
+            return $self->_encode($chunk);
+        };
+    });
 }
 
 sub _encode {
