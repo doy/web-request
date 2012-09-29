@@ -1,6 +1,7 @@
 Revision history for Web-Request
 
 {{$NEXT}}
+      - forgot to add docs for streaming responses
 
 0.05  2012-09-29
       - support streaming responses in Web::Response
