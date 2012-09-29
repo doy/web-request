@@ -14,11 +14,8 @@ use Web::Response;
     my $psgi_res = $res->finalize;
     ok(ref($psgi_res) eq 'CODE', "got a coderef");
 
-    my $complete_response;
-    my $responder = sub { $complete_response = $_[0] };
-    $psgi_res->($responder);
     is_deeply(
-        $complete_response,
+        resolve_response($psgi_res),
         [ 200, [], ["Hello world"] ],
         "got the right response"
     );
@@ -36,11 +33,8 @@ use Web::Response;
     my $psgi_res = $res->finalize;
     ok(ref($psgi_res) eq 'CODE', "got a coderef");
 
-    my $complete_response;
-    my $responder = sub { $complete_response = $_[0] };
-    $psgi_res->($responder);
     is_deeply(
-        $complete_response,
+        resolve_response($psgi_res),
         [ 200, [], ["caf\xe9"] ],
         "got the right response"
     );
@@ -59,14 +53,28 @@ use Web::Response;
     my $psgi_res = $res->finalize;
     ok(ref($psgi_res) eq 'CODE', "got a coderef");
 
-    my $complete_response;
-    my $responder = sub { $complete_response = $_[0] };
-    $psgi_res->($responder);
     is_deeply(
-        $complete_response,
+        resolve_response($psgi_res),
         [ 200, [], ["caf\xc3\xa9"] ],
         "got the right response"
     );
+}
+
+sub resolve_response {
+    my ($psgi_res) = @_;
+
+    if (ref($psgi_res) eq 'CODE') {
+        my $body = [];
+        $psgi_res->(sub {
+            $psgi_res = shift;
+            return Plack::Util::inline_object(
+                write => sub { push @$body, $_[0] },
+                close => sub { push @$psgi_res, $body },
+            );
+        });
+    }
+
+    return $psgi_res;
 }
 
 done_testing;
