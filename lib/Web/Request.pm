@@ -223,7 +223,7 @@ has _parsed_body => (
         }
         else {
             open my $fh, '<', \$content;
-            $self->env->{'psgix.input'} = $fh;
+            $self->env->{'psgi.input'} = $fh;
             $self->env->{'psgix.input.buffered'} = 1;
         }
 
