@@ -70,10 +70,14 @@ has streaming_response => (
 );
 
 has cookies => (
+    traits  => ['Hash'],
     is      => 'rw',
     isa     => 'HashRef[Str|HashRef[Str]]',
     lazy    => 1,
     default => sub { +{} },
+    handles => {
+        has_cookies => 'count',
+    },
 );
 
 has _encoding_obj => (
@@ -123,8 +127,6 @@ sub finalize {
     return $self->_finalize_streaming
         if $self->has_streaming_response;
 
-    $self->_finalize_cookies;
-
     my $res = [
         $self->status,
         [
@@ -143,6 +145,8 @@ sub finalize {
         $self->content
     ];
 
+    $self->_finalize_cookies($res);
+
     return $res unless $self->has_encoding;
 
     return Plack::Util::response_cb($res, sub {
@@ -159,11 +163,13 @@ sub _finalize_streaming {
 
     my $streaming = $self->streaming_response;
 
-    # XXX cookies?
-
-    return $streaming unless $self->has_encoding;
+    return $streaming
+        unless $self->has_encoding || $self->has_cookies;
 
     return Plack::Util::response_cb($streaming, sub {
+        my $res = shift;
+        $self->_finalize_cookies($res);
+        return unless $self->has_encoding;
         return sub {
             my $chunk = shift;
             return unless defined $chunk;
@@ -181,10 +187,11 @@ sub _encode {
 
 sub _finalize_cookies {
     my $self = shift;
+    my ($res) = @_;
 
     my $cookies = $self->cookies;
     for my $name (keys %$cookies) {
-        $self->headers->push_header(
+        push @{ $res->[1] }, (
             'Set-Cookie' => $self->_bake_cookie($name, $cookies->{$name}),
         );
     }
