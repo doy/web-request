@@ -274,6 +274,11 @@ overloads C<"">, an arrayref containing a list of either of those, a
 filehandle, or an object that implements the C<getline> and C<close> methods.
 Defaults to C<[]>.
 
+=item streaming_response
+
+Instead of C<status>/C<headers>/C<content>, you can provide a coderef which
+implements the streaming response API described in the L<PSGI> specification.
+
 =item cookies
 
 A hashref of cookies to return with the response. The values in the hashref can
@@ -284,6 +289,15 @@ C<expires> can also be provided as a UNIX timestamp (an epoch time, as returned
 from C<time>). Defaults to C<{}>.
 
 =back
+
+In addition, a single parameter which is a valid PSGI response (a three element
+arrayref or a coderef) will also be accepted, and will populate the attributes
+as appropriate. If an arrayref is passed, the first element will be stored as
+the C<status> attribute, the second element if it exists will be interpreted as
+in the PSGI specification to create an L<HTTP::Headers> object and stored in
+the C<headers> attribute, and the third element if it exists will be stored as
+the C<content> attribute. If a coderef is passed, it will be stored in the
+C<streaming_response> attribute.
 
 =cut
 
@@ -319,9 +333,21 @@ Shortcut for C<< $ret->headers->header('Location', $location) >>.
 
 Sets (and returns) the C<content> attribute, as described above.
 
+=method streaming_response
+
+Sets and returns the streaming response coderef, as described above.
+
+=method has_streaming_response
+
+Returns whether or not a streaming response was provided.
+
 =method cookies($cookies)
 
 Sets (and returns) the C<cookies> attribute, as described above.
+
+=method has_cookies
+
+Returns whether or not any cookies have been defined.
 
 =method redirect($location, $status)
 
@@ -330,7 +356,9 @@ Sets the C<Location> header to $location, and sets the status code to $status
 
 =method finalize
 
-Returns a valid L<PSGI> response, based on the values given.
+Returns a valid L<PSGI> response, based on the values given. This can be either
+an arrayref or a coderef, depending on if an immediate or streaming response
+was provided. If both were provided, the streaming response will be preferred.
 
 =cut
 
