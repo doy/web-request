@@ -1,6 +1,8 @@
 Revision history for Web-Request
 
 {{$NEXT}}
+
+0.07  2012-09-30
       - switch to using Stream::Buffered
 
 0.06  2012-09-29
