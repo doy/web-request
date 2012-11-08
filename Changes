@@ -1,6 +1,8 @@
 Revision history for Web-Request
 
 {{$NEXT}}
+
+0.08  2012-11-07
       - fix tests with new HTTP::Message
 
 0.07  2012-09-30
