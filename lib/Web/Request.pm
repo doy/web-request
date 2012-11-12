@@ -210,7 +210,7 @@ has _parsed_body => (
             $input->seek(0, 0);
         }
         else {
-            my $buffer = Stream::Buffered->new($cl);
+            $buffer = Stream::Buffered->new($cl);
         }
 
         my $spin = 0;
