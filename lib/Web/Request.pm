@@ -188,8 +188,11 @@ has _parsed_body => (
         my $ct = $self->content_type;
         my $cl = $self->content_length;
         if (!$ct && !$cl) {
+            if (!$self->env->{'psgix.input.buffered'}) {
+                $self->env->{'psgix.input.buffered'} = 1;
+                $self->env->{'psgi.input'} = Stream::Buffered->new(0)->rewind;
+            }
             return {
-                content => '',
                 body    => {},
                 uploads => {},
             };
