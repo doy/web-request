@@ -1,6 +1,7 @@
 Revision history for Web-Request
 
 {{$NEXT}}
+      - fix setting up psgi.input in certain cases
 
 0.08  2012-11-07
       - fix tests with new HTTP::Message
