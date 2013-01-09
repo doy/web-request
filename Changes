@@ -1,6 +1,8 @@
 Revision history for Web-Request
 
 {{$NEXT}}
+
+0.10  2013-01-09
       - fix test on blead (hash order dependency)
 
 0.09  2012-11-12
