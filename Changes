@@ -1,6 +1,7 @@
 Revision history for Web-Request
 
 {{$NEXT}}
+      - fix test on blead (hash order dependency)
 
 0.09  2012-11-12
       - fix setting up psgi.input in certain cases
