@@ -478,6 +478,8 @@ sub content {
     my $fh = $self->_input         or return '';
     my $cl = $self->content_length or return '';
 
+    $fh->seek(0, 0); # just in case middleware/apps read it without seeking back
+
     $fh->read(my $content, $cl, 0);
     $fh->seek(0, 0);
 
