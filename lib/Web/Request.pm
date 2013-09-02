@@ -2,11 +2,11 @@ package Web::Request;
 use Moose;
 # ABSTRACT: common request class for web frameworks
 
-use Class::Load ();
 use Encode ();
 use HTTP::Body ();
 use HTTP::Headers ();
 use HTTP::Message::PSGI ();
+use Module::Runtime ();
 use Stream::Buffered ();
 use URI ();
 use URI::Escape ();
@@ -403,7 +403,7 @@ sub new_from_request {
 sub new_response {
     my $self = shift;
 
-    Class::Load::load_class($self->response_class);
+    Module::Runtime::use_package_optimistically($self->response_class);
     my $res = $self->response_class->new(@_);
     $res->_encoding_obj($self->_encoding_obj)
         if $self->has_encoding;
@@ -413,7 +413,7 @@ sub new_response {
 sub _new_upload {
     my $self = shift;
 
-    Class::Load::load_class($self->upload_class);
+    Module::Runtime::use_package_optimistically($self->upload_class);
     $self->upload_class->new(@_);
 }
 
