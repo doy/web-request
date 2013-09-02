@@ -777,21 +777,21 @@ You can also look for information at:
 
 =over 4
 
-=item * AnnoCPAN: Annotated CPAN documentation
+=item * MetaCPAN
 
-L<http://annocpan.org/dist/Web-Request>
+L<https://metacpan.org/release/Web-Request>
 
-=item * CPAN Ratings
+=item * Github
 
-L<http://cpanratings.perl.org/d/Web-Request>
+L<https://github.com/doy/web-request>
 
 =item * RT: CPAN's request tracker
 
 L<http://rt.cpan.org/NoAuth/Bugs.html?Dist=Web-Request>
 
-=item * Search CPAN
+=item * CPAN Ratings
 
-L<http://search.cpan.org/dist/Web-Request>
+L<http://cpanratings.perl.org/d/Web-Request>
 
 =back
 
