@@ -1,6 +1,8 @@
 Revision history for Web-Request
 
 {{$NEXT}}
+
+0.11  2013-09-02
       - fix form parameters (domm, #1)
       - backport a couple fixes from Plack::Request/Plack::Response
         - a96a5b6: try harder to buffer the entire input
