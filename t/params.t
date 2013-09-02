@@ -23,4 +23,17 @@ is $req->param('foo'), "baz";
 is_deeply $req->all_parameters->{foo}, [ qw(bar baz) ];
 is_deeply [ sort keys %{ $req->parameters } ], [ 'bar', 'foo' ];
 
+use IO::String;
+my $payload="foo=bar&foo=baz&bar=bar";
+my $io = IO::String->new($payload);
+$req = Web::Request->new_from_env({
+    'REQUEST_METHOD'    => 'POST',
+    'SCRIPT_NAME'       => '/foo',
+    'CONTENT_LENGTH'    => length($payload),
+    'CONTENT_TYPE'      => "application/x-www-form-urlencoded",
+    'psgi.input'        => $io,
+});
+is_deeply $req->all_parameters->{foo}, [ qw(bar baz) ];
+is_deeply [ sort keys %{ $req->parameters } ], [ 'bar', 'foo' ];
+
 done_testing;
