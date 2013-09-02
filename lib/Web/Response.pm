@@ -158,6 +158,11 @@ sub finalize {
     });
 }
 
+sub to_app {
+    my $self = shift;
+    return sub { $self->finalize };
+}
+
 sub _finalize_streaming {
     my $self = shift;
 
@@ -359,6 +364,11 @@ Sets the C<Location> header to $location, and sets the status code to $status
 Returns a valid L<PSGI> response, based on the values given. This can be either
 an arrayref or a coderef, depending on if an immediate or streaming response
 was provided. If both were provided, the streaming response will be preferred.
+
+=method to_app
+
+Returns a PSGI application which just returns the response in this object
+directly.
 
 =cut
 
