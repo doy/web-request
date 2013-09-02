@@ -1,6 +1,11 @@
 Revision history for Web-Request
 
 {{$NEXT}}
+      - fix form parameters (domm, #1)
+      - backport a couple fixes from Plack::Request/Plack::Response
+        - a96a5b6: try harder to buffer the entire input
+        - 39d3a13: more accurate URI escaping for query params
+        - e3d0dde: support 'to_app' on Web::Response
 
 0.10  2013-01-09
       - fix test on blead (hash order dependency)
