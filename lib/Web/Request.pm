@@ -452,7 +452,6 @@ sub all_parameters {
 
     my $ret = { %{ $self->all_query_parameters } };
     my $body_parameters = $self->all_body_parameters;
-
     for my $key (keys %$body_parameters) {
         push @{ $ret->{$key} ||= [] }, @{ $body_parameters->{$key} };
     }
