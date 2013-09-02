@@ -454,7 +454,7 @@ sub all_parameters {
     my $body_parameters = $self->all_body_parameters;
 
     for my $key (keys %$body_parameters) {
-        push @{ $ret->{$key} ||= [] }, @{ $body_parameters->{key} };
+        push @{ $ret->{$key} ||= [] }, @{ $body_parameters->{$key} };
     }
 
     return $ret;
