@@ -759,9 +759,8 @@ iso8859-1. This can be overridden in a subclass.
 
 No known bugs.
 
-Please report any bugs through RT: email
-C<bug-web-request at rt.cpan.org>, or browse to
-L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=Web-Request>.
+Please report any bugs to GitHub Issues at
+L<https://github.com/doy/web-request/issues>.
 
 =head1 SEE ALSO
 
